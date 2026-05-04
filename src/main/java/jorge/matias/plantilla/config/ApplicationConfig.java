@@ -1,4 +1,4 @@
-package jorge.matias.plantilla.security;
+package jorge.matias.plantilla.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,8 +19,7 @@ public class ApplicationConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
