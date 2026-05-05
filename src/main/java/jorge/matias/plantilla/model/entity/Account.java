@@ -49,9 +49,10 @@ public class Account implements UserDetails{
     @Column(nullable = false)
     private String password;
 
+    @Builder.Default
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private AccountStatus status;
+    private AccountStatus status = AccountStatus.PENDING_VERIFICATION;
     
     @Builder.Default
     @Column(nullable = false)
@@ -62,11 +63,12 @@ public class Account implements UserDetails{
 
     private Instant lastLoginAt;
 
+    @Builder.Default
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "account_roles", joinColumns = @JoinColumn(name = "account_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private List<AccountRole> roles;
+    private List<AccountRole> roles = List.of(AccountRole.USER);
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -78,5 +80,21 @@ public class Account implements UserDetails{
     @Override
     public String getUsername() {
         return id.toString();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { 
+        return this.status != AccountStatus.BANNED;
+    } 
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { 
+        return this.status == AccountStatus.ACTIVE; 
     }
 }

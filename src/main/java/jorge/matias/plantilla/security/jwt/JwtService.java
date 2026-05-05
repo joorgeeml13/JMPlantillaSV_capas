@@ -36,7 +36,12 @@ public class JwtService {
         this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails){
+    public String generateAccessToken(UserDetails userDetails){
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("roles", userDetails.getAuthorities().stream()
+            .map(auth -> auth.getAuthority())
+            .toList());
+        extraClaims.put("email", userDetails.getUsername());
         return buildToken(extraClaims, userDetails, accessTokenExpirationMs);
     }
     public String generateRefreshToken(UserDetails userDetails) {

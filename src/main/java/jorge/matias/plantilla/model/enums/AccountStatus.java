@@ -1,5 +1,5 @@
 package jorge.matias.plantilla.model.enums;
 
 public enum AccountStatus {
-    ACTIVE, INACTIVE, SUSPENDED, PENDING_VERIFICATION
+    ACTIVE, INACTIVE, SUSPENDED, PENDING_VERIFICATION, BANNED
 }
