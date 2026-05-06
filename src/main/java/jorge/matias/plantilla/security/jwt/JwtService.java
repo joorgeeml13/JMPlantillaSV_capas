@@ -26,9 +26,6 @@ public class JwtService {
     @Value("${security.jwt.access-expiration-ms}")
     private long accessTokenExpirationMs;
 
-    @Value("${security.jwt.refresh-expiration-ms}")
-    private long refreshTokenExpirationMs;
-
     private SecretKey secretKey;
 
     @PostConstruct
@@ -41,11 +38,7 @@ public class JwtService {
         extraClaims.put("roles", userDetails.getAuthorities().stream()
             .map(auth -> auth.getAuthority())
             .toList());
-        extraClaims.put("email", userDetails.getUsername());
         return buildToken(extraClaims, userDetails, accessTokenExpirationMs);
-    }
-    public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, refreshTokenExpirationMs);
     }
 
     private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration){

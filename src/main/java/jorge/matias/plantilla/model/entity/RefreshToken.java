@@ -3,8 +3,6 @@ package jorge.matias.plantilla.model.entity;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.ManyToAny;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -46,6 +44,9 @@ public class RefreshToken {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "replaced_by_id")
     private RefreshToken replacedBy;
+
+    @Column(name = "device_id")
+    private String deviceId;
 
     public boolean isExpired() {
         return Instant.now().isAfter(expiryDate);

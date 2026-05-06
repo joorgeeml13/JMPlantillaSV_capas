@@ -6,6 +6,7 @@ CREATE TABLE refresh_tokens (
     expiry_date TIMESTAMP WITH TIME ZONE NOT NULL,
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
     replaced_by_id UUID,
+    device_id VARCHAR(255),
     
     -- Foreign Key hacia la cuenta (el dueño de la sesión)
     CONSTRAINT fk_refresh_tokens_account 
@@ -25,3 +26,5 @@ CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
 
 -- Índice para limpiar tokens de un usuario rápido (útil en logouts masivos)
 CREATE INDEX idx_refresh_tokens_account_id ON refresh_tokens(account_id);
+
+CREATE INDEX idx_refresh_tokens_account_device ON refresh_tokens(account_id, device_id);

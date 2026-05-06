@@ -18,13 +18,15 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AccountService {
+public class AuthService {
 
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public void registerAccount(String email, String password){
@@ -40,18 +42,20 @@ public class AccountService {
     }
 
     @Transactional
-    public TokenPair login(String email, String password){
+    public TokenPair login(String email, String password, String deviceId){
         Authentication auth = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(email, password));
 
         Account account = (Account) auth.getPrincipal();
 
         String accessToken = jwtService.generateAccessToken(account);
-        String refreshToken = jwtService.generateRefreshToken(account);
+        String refreshToken = refreshTokenService.createRefreshToken(account, deviceId);
 
         return TokenPair.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)
             .build();
     }
+
+    
 }
