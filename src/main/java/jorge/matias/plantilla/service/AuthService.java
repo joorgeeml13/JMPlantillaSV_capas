@@ -1,15 +1,21 @@
 package jorge.matias.plantilla.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import jorge.matias.plantilla.exception.auth.AuthException;
 import jorge.matias.plantilla.model.entity.Account;
+import jorge.matias.plantilla.model.entity.AccountPrincipal;
 import jorge.matias.plantilla.model.entity.RefreshToken;
+import jorge.matias.plantilla.model.enums.AccountStatus;
 import jorge.matias.plantilla.repository.AccountRepository;
 import jorge.matias.plantilla.security.jwt.JwtService;
 import jorge.matias.plantilla.vo.TokenPair;
@@ -45,9 +51,11 @@ public class AuthService {
         Authentication auth = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(email, password));
 
-        Account account = (Account) auth.getPrincipal();
+        AccountPrincipal principal = (AccountPrincipal) auth.getPrincipal();
+        Account account = accountRepository.findById(principal.getId())
+            .orElseThrow(() -> new AuthException("auth.user.not_found"));
 
-        String accessToken = jwtService.generateAccessToken(account);
+        String accessToken = jwtService.generateAccessToken(principal);
         String refreshToken = refreshTokenService.createRefreshToken(account, deviceId);
 
         return TokenPair.builder()
@@ -58,16 +66,27 @@ public class AuthService {
 
     @Transactional
     public TokenPair refreshToken(String oldRefreshToken, String deviceId) {
-        
         RefreshToken newRefreshTokenEntity = refreshTokenService.rotateRefreshToken(oldRefreshToken, deviceId);
-        
         Account account = newRefreshTokenEntity.getAccount();
-        
-        String newAccessToken = jwtService.generateAccessToken(account);
+        AccountPrincipal principal = buildPrincipal(account);
+        String newAccessToken = jwtService.generateAccessToken(principal);
 
         return TokenPair.builder()
             .accessToken(newAccessToken)
             .refreshToken(newRefreshTokenEntity.getToken())
+            .build();
+    }
+
+    private AccountPrincipal buildPrincipal(Account account) {
+        return AccountPrincipal.builder()
+            .id(account.getId())
+            .email(account.getEmail())
+            .password(account.getPassword())
+            .authorities(account.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .collect(Collectors.toList()))
+            .isEnabled(account.getStatus() == AccountStatus.ACTIVE)
+            .isAccountNonLocked(account.getStatus() != AccountStatus.BANNED)
             .build();
     }
 }

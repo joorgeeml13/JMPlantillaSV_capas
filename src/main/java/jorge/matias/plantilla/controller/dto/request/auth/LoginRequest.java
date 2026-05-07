@@ -1,4 +1,4 @@
-package jorge.matias.plantilla.controller.dto.request;
+package jorge.matias.plantilla.controller.dto.request.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

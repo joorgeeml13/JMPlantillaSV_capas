@@ -34,7 +34,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Account implements UserDetails{
+public class Account{
 
     @Version
     private Long version;
@@ -64,37 +64,10 @@ public class Account implements UserDetails{
     private Instant lastLoginAt;
 
     @Builder.Default
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "account_roles", joinColumns = @JoinColumn(name = "account_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private List<AccountRole> roles = List.of(AccountRole.USER);
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public String getUsername() {
-        return id.toString();
-    }
-
-    @Override
-    public boolean isAccountNonExpired() { return true; }
-
-    @Override
-    public boolean isAccountNonLocked() { 
-        return this.status != AccountStatus.BANNED;
-    } 
-
-    @Override
-    public boolean isCredentialsNonExpired() { return true; }
-
-    @Override
-    public boolean isEnabled() { 
-        return this.status == AccountStatus.ACTIVE; 
-    }
 }

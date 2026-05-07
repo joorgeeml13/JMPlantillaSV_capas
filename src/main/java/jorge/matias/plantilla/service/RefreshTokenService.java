@@ -2,6 +2,7 @@ package jorge.matias.plantilla.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -65,5 +66,19 @@ public class RefreshTokenService {
             .build();
 
         return refreshTokenRepository.save(newToken);
+    }
+
+    @Transactional
+    public void revokeAllTokens(Account account){
+        List<RefreshToken> validTokens = refreshTokenRepository.findValidTokensByUser(account);
+
+        if (validTokens.isEmpty()) return;
+
+        validTokens.forEach(token -> {
+            token.setRevoked(true);
+            token.setRevoked(true);
+        });
+
+        refreshTokenRepository.saveAll(validTokens);
     }
 }
