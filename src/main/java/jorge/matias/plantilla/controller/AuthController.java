@@ -4,7 +4,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jorge.matias.plantilla.config.Constantes;
@@ -12,16 +11,13 @@ import jorge.matias.plantilla.controller.dto.request.LoginRequest;
 import jorge.matias.plantilla.controller.dto.request.RefreshRequest;
 import jorge.matias.plantilla.controller.dto.request.RegisterRequest;
 import jorge.matias.plantilla.controller.dto.response.AuthResponse;
-import jorge.matias.plantilla.model.entity.RefreshToken;
 import jorge.matias.plantilla.service.AuthService;
 import jorge.matias.plantilla.vo.TokenPair;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;

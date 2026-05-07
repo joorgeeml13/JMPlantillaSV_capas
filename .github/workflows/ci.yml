@@ -1,0 +1,43 @@
+name: Proyect Sanity Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  auditoria-y-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Bajando codigo
+        uses: actions/checkout@v4
+
+      - name: Set up java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Levantando infrastructura
+        run: docker compose up -d db redis
+
+      - name: ⏳ Esperando a servicios
+        # Le damos unos segundos para que Postgres termine de arrancar y no te escupa un "Connection Refused"
+        run: sleep 10
+
+      - name: Ejecutando test ....
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ secrets.DB_NAME || 'template_db' }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USER || 'dev_user' }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD || '1234' }}
+          SPRING_REDIS_HOST: localhost
+          SPRING_REDIS_PORT: 6379
+        run: mvnw clean verify -B
+
+      - name: Testear la build
+        run: docker compose --profile prod build backend
