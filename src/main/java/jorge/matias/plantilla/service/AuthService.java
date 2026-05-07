@@ -1,7 +1,5 @@
 package jorge.matias.plantilla.service;
 
-import java.util.Map;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,6 +9,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import jorge.matias.plantilla.exception.auth.AuthException;
 import jorge.matias.plantilla.model.entity.Account;
+import jorge.matias.plantilla.model.entity.RefreshToken;
 import jorge.matias.plantilla.repository.AccountRepository;
 import jorge.matias.plantilla.security.jwt.JwtService;
 import jorge.matias.plantilla.vo.TokenPair;
@@ -57,5 +56,18 @@ public class AuthService {
             .build();
     }
 
-    
+    @Transactional
+    public TokenPair refreshToken(String oldRefreshToken, String deviceId) {
+        
+        RefreshToken newRefreshTokenEntity = refreshTokenService.rotateRefreshToken(oldRefreshToken, deviceId);
+        
+        Account account = newRefreshTokenEntity.getAccount();
+        
+        String newAccessToken = jwtService.generateAccessToken(account);
+
+        return TokenPair.builder()
+            .accessToken(newAccessToken)
+            .refreshToken(newRefreshTokenEntity.getToken())
+            .build();
+    }
 }

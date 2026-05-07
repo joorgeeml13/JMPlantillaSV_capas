@@ -1,4 +1,4 @@
--- V3: Creación de la tabla de refresh tokens para gestión de sesiones y rotación
+-- V2: Creación de la tabla de refresh tokens para gestión de sesiones y rotación
 CREATE TABLE refresh_tokens (
     id UUID PRIMARY KEY,
     token VARCHAR(512) NOT NULL UNIQUE,

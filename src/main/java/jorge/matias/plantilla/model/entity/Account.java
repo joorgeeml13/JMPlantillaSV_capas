@@ -52,7 +52,7 @@ public class Account implements UserDetails{
     @Builder.Default
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private AccountStatus status = AccountStatus.PENDING_VERIFICATION;
+    private AccountStatus status = AccountStatus.ACTIVE;
     
     @Builder.Default
     @Column(nullable = false)

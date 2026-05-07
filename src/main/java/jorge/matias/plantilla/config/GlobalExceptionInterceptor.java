@@ -24,9 +24,9 @@ public class GlobalExceptionInterceptor  {
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex) {
         String message = messageSource.getMessage(ex.getMessageKey(), ex.getArgs(), LocaleContextHolder.getLocale());
-        ErrorResponse response = ErrorResponse.create(ex, HttpStatus.UNPROCESSABLE_ENTITY, message);
+        ErrorResponse response = ErrorResponse.create(ex, HttpStatus.UNAUTHORIZED, message);
 
-         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
+         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(AuthenticationException.class)

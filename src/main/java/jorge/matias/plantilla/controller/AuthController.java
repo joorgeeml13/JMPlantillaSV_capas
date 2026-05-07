@@ -2,14 +2,17 @@ package jorge.matias.plantilla.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jorge.matias.plantilla.config.Constantes;
 import jorge.matias.plantilla.controller.dto.request.LoginRequest;
+import jorge.matias.plantilla.controller.dto.request.RefreshRequest;
 import jorge.matias.plantilla.controller.dto.request.RegisterRequest;
 import jorge.matias.plantilla.controller.dto.response.AuthResponse;
+import jorge.matias.plantilla.model.entity.RefreshToken;
 import jorge.matias.plantilla.service.AuthService;
 import jorge.matias.plantilla.vo.TokenPair;
 import lombok.AllArgsConstructor;
@@ -18,8 +21,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -71,6 +76,42 @@ public class AuthController {
             .body(new AuthResponse(tokens.accessToken(), null));
     }
     
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(
+        @RequestHeader(value = "X-Client-Type", defaultValue = "WEB") String clientType,
+        @RequestHeader(value = "X-Device-ID", defaultValue = "web-browser") String deviceId,
+        @CookieValue(name = "${security.jwt.refresh-cookie-name}", required = false) String refreshTokenCookie,
+        @RequestBody(required = false) RefreshRequest refreshBody
+    ) {
+        String tokenToRefresh = null;
+
+        if (Constantes.CLIENT_MOBILE.equalsIgnoreCase(clientType)) {
+            if (refreshBody == null || refreshBody.refreshToken() == null || refreshBody.refreshToken().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "auth.refresh.token.missing.body");
+            }
+            tokenToRefresh = refreshBody.refreshToken();
+        } else {
+            if (refreshTokenCookie == null || refreshTokenCookie.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "auth.refresh.token.missing.cookie");
+            }
+            tokenToRefresh = refreshTokenCookie;
+        }
+
+        TokenPair newTokens = accountService.refreshToken(tokenToRefresh, deviceId);
+
+        if (Constantes.CLIENT_MOBILE.equalsIgnoreCase(clientType)) {
+            return ResponseEntity.ok(new AuthResponse(newTokens.accessToken(), newTokens.refreshToken()));
+        }
+
+        ResponseCookie cookie = createRefreshCookie(newTokens.refreshToken());
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .body(new AuthResponse(newTokens.accessToken(), null));
+    }
+
+    
+
     private ResponseCookie createRefreshCookie(String token) {
         return ResponseCookie.from(refreshCookieName, token)
                 .httpOnly(true)
