@@ -25,6 +25,10 @@ public class AccountService {
         Account acc = accountRepository.findById(UUID.fromString(userId))
             .orElseThrow(UserNotFoundException::new);
 
+        //Validacion cambio misma contraseña
+        if(passwordEncoder.matches(newPassword, acc.getPassword())){
+            throw new  PasswordReuseException();
+        }
         // Validar que la contraseña antigua es correcta
         if (!passwordEncoder.matches(oldPassword, acc.getPassword())) {
             throw new IncorrectPasswordException();

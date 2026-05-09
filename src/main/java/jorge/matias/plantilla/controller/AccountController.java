@@ -30,7 +30,7 @@ public class AccountController {
 
     @PutMapping("/password")
     public ResponseEntity<?> changePassword(
-        @RequestBody ChangePasswordRequest request,
+        @Valid @RequestBody ChangePasswordRequest request,
         @AuthenticationPrincipal AccountPrincipal currentUser
     ) {
         accountService.changePassword(request.oldPassword(), request.newPassword(), currentUser.getUsername());
