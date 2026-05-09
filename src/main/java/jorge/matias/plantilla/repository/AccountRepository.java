@@ -11,4 +11,5 @@ import jorge.matias.plantilla.model.entity.Account;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, UUID>{
     Optional<Account> findByEmail(String email);
+    boolean existsByEmail(String email);
 }
