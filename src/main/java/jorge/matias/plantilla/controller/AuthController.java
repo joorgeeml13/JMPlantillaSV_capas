@@ -11,6 +11,7 @@ import jorge.matias.plantilla.controller.dto.request.auth.LoginRequest;
 import jorge.matias.plantilla.controller.dto.request.auth.RefreshRequest;
 import jorge.matias.plantilla.controller.dto.request.auth.RegisterRequest;
 import jorge.matias.plantilla.controller.dto.response.AuthResponse;
+import jorge.matias.plantilla.exception.auth.RefreshTokenNotFoundException;
 import jorge.matias.plantilla.service.AuthService;
 import jorge.matias.plantilla.vo.TokenPair;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class AuthController {
     @Value("${security.jwt.refresh-expiration-days}")
     private long refreshCookieMaxAgeDays;
 
-    @Value("${app.security.jwt.refresh-cookie.secure}")
+    @Value("${security.jwt.refresh-cookie.secure}")
     private boolean refreshCookieSecure;
 
     @Value("${security.jwt.refresh-path}")
@@ -88,7 +89,7 @@ public class AuthController {
             tokenToRefresh = refreshBody.refreshToken();
         } else {
             if (refreshTokenCookie == null || refreshTokenCookie.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "auth.refresh.token.missing.cookie");
+                throw new RefreshTokenNotFoundException();
             }
             tokenToRefresh = refreshTokenCookie;
         }

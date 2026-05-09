@@ -11,7 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+import jorge.matias.plantilla.exception.auth.AccountAlreadyExistException;
 import jorge.matias.plantilla.exception.auth.AuthException;
+import jorge.matias.plantilla.exception.auth.UserNotFoundException;
 import jorge.matias.plantilla.model.entity.Account;
 import jorge.matias.plantilla.model.entity.AccountPrincipal;
 import jorge.matias.plantilla.model.entity.RefreshToken;
@@ -36,7 +38,7 @@ public class AuthService {
     @Transactional
     public void registerAccount(String email, String password){
         if(accountRepository.existsByEmail(email))
-            throw new AuthException("auth.error.account-already-exists");
+            throw new AccountAlreadyExistException();
 
         Account account = Account.builder()
             .email(email)
@@ -53,7 +55,7 @@ public class AuthService {
 
         AccountPrincipal principal = (AccountPrincipal) auth.getPrincipal();
         Account account = accountRepository.findById(principal.getId())
-            .orElseThrow(() -> new AuthException("auth.user.not_found"));
+            .orElseThrow(UserNotFoundException::new);
 
         String accessToken = jwtService.generateAccessToken(principal);
         String refreshToken = refreshTokenService.createRefreshToken(account, deviceId);

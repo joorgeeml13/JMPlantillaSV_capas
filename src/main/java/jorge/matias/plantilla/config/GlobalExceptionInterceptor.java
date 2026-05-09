@@ -17,16 +17,26 @@ import lombok.RequiredArgsConstructor;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
-public class GlobalExceptionInterceptor  {
+public class GlobalExceptionInterceptor {
     
     private final MessageSource messageSource;
 
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex) {
-        String message = messageSource.getMessage(ex.getMessageKey(), ex.getArgs(), LocaleContextHolder.getLocale());
-        ErrorResponse response = ErrorResponse.create(ex, HttpStatus.UNAUTHORIZED, message);
+        // Resolver mensaje internacionalizado con parámetros dinámicos
+        String message = messageSource.getMessage(
+            ex.getMessageKey(), 
+            ex.getArgs(),
+            "",
+            LocaleContextHolder.getLocale()
+        );
+        
+        HttpStatus status = ex.getHttpStatus() != null ? ex.getHttpStatus() : HttpStatus.BAD_REQUEST;
+        
+        
+        ErrorResponse response = ErrorResponse.create(ex, status, message);
 
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        return ResponseEntity.status(status).body(response);
     }
 
     @ExceptionHandler(AuthenticationException.class)

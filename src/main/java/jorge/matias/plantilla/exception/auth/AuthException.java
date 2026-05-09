@@ -1,16 +1,20 @@
 package jorge.matias.plantilla.exception.auth;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.Getter;
 
 @Getter
-public class AuthException extends RuntimeException{
+public abstract class AuthException extends RuntimeException {
 
     private final String messageKey;
     private final Object[] args;
-
-    public AuthException(String messageKey, Object... args){
+    private final HttpStatus httpStatus;
+    
+    protected AuthException(String messageKey, HttpStatus httpStatus, Object... args) {
         super(messageKey);
         this.messageKey = messageKey;
+        this.httpStatus = httpStatus;
         this.args = args;
     }
 }

@@ -30,6 +30,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
     @Modifying
     @Query("DELETE FROM RefreshToken rt WHERE rt.account.id = :accountId AND (rt.revoked = true OR rt.expiryDate < :now)")
     void cleanUpTokens(UUID accountId, Instant now);
-    @Query("SELECT rt FROM RefreshToken rt WHERE rt.revoked = false AND rt.account  = :acc")
-    List<RefreshToken> findValidTokensByUser(@Param("acc") Account acc);
+    
+    List<RefreshToken> findAllByAccountAndRevokedFalse(Account acc);
 }

@@ -35,7 +35,7 @@ public class AuthControllerIntegrationTest {
 
     // 1. Levantamos el contenedor de Postgres
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("pgvector/pgvector:pg16");
 
     
     // 2. Le inyectamos las credenciales del contenedor a Spring Boot en tiempo de ejecución
@@ -120,12 +120,12 @@ public class AuthControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("Refresh WEB: Debe fallar si no se envía la cookie")
+    @DisplayName("Refresh WEB: Debe fallar si no se envía la cookie (404 NOT_FOUND)")
     void shouldFailRefreshWebWithoutCookie() throws Exception {
         mockMvc.perform(post("/auth/refresh")
                 .header("X-Client-Type", "WEB")
                 .header("X-Device-ID", "device-web-1"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound()); // RefreshTokenNotFoundException → 404
     }
 
     @Test
@@ -189,7 +189,7 @@ public class AuthControllerIntegrationTest {
 
         // 3. Intento de Reúso (Ataque): Intentamos usar el token 1 otra vez
         mockMvc.perform(post("/auth/refresh").header("X-Client-Type", "WEB").cookie(firstCookie))
-                .andExpect(status().isUnauthorized()); // Debe dar 401 porque ya está revocado
+                .andExpect(status().isUnauthorized()); // RefreshTokenCompromisedException → 401
     }
 
     @Test

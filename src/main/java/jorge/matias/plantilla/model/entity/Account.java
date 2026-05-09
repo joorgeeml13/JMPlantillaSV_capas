@@ -64,7 +64,7 @@ public class Account{
     private Instant lastLoginAt;
 
     @Builder.Default
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "account_roles", joinColumns = @JoinColumn(name = "account_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
